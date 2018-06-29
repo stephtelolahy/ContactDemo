@@ -32,6 +32,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        updatePermissionStatus()
+
         // Create the list view data adapter
         contactsListDataAdapter = ArrayAdapter(applicationContext, android.R.layout.simple_list_item_1)
         display_phone_contacts_list_view.adapter = contactsListDataAdapter
@@ -57,6 +59,11 @@ class MainActivity : AppCompatActivity() {
 
 
     // Private
+
+    private fun updatePermissionStatus() {
+        permission_text_view.text = "WRITE_CONTACTS=${hasPermission(Manifest.permission.WRITE_CONTACTS)}" +
+                "\nREAD_CONTACTS=${hasPermission(Manifest.permission.READ_CONTACTS)}"
+    }
 
     private fun addPhoneContacts() {
         //AddPhoneContactActivity.start(applicationContext);
@@ -112,6 +119,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        updatePermissionStatus()
     }
 
     // Read and display android phone contacts in list view.
