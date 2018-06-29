@@ -10,6 +10,8 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 
+//https://www.dev2qa.com/android-add-contact-programmatically-example/
+
 class MainActivity : AppCompatActivity() {
 
     // Constants
