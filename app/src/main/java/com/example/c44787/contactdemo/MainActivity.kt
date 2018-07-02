@@ -3,10 +3,12 @@ package com.example.c44787.contactdemo
 import android.Manifest
 import android.content.ContentUris
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
+import android.provider.Settings
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
@@ -60,10 +62,22 @@ class MainActivity : AppCompatActivity() {
                 readPhoneContacts()
             }
         }
+
+        settings_phone_contacts_button.setOnClickListener {
+            openContactSettings()
+        }
     }
 
 
     // Private
+
+    private fun openContactSettings() {
+        val intent = Intent()
+        intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+        val uri = Uri.fromParts("package", packageName, null)
+        intent.data = uri
+        startActivity(intent)
+    }
 
     private fun refreshPermissionStatus() {
         val text = "WRITE_CONTACTS=${hasPermission(Manifest.permission.WRITE_CONTACTS)} \nREAD_CONTACTS=${hasPermission(Manifest.permission.READ_CONTACTS)}"
