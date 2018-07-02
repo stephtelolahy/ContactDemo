@@ -1,7 +1,10 @@
 package com.example.c44787.contactdemo
 
 import android.Manifest
+import android.content.ContentUris
+import android.content.ContentValues
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.support.v4.app.ActivityCompat
@@ -11,14 +14,17 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 
+
 //https://www.dev2qa.com/android-add-contact-programmatically-example/
 
 class MainActivity : AppCompatActivity() {
 
     // Constants
 
-    private val PERMISSION_REQUEST_CODE_READ_CONTACTS = 1
-    private val PERMISSION_REQUEST_CODE_WRITE_CONTACTS = 2
+    companion object {
+        const val PERMISSION_REQUEST_CODE_READ_CONTACTS = 1
+        const val PERMISSION_REQUEST_CODE_WRITE_CONTACTS = 2
+    }
 
     // Properties
 
@@ -31,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        updatePermissionStatus()
+        refreshPermissionStatus()
 
         // Create the list view data adapter
         contactsListDataAdapter = ArrayAdapter(applicationContext, android.R.layout.simple_list_item_1)
@@ -42,7 +48,7 @@ class MainActivity : AppCompatActivity() {
             if (!hasPermission(Manifest.permission.WRITE_CONTACTS)) {
                 requestPermission(Manifest.permission.WRITE_CONTACTS, PERMISSION_REQUEST_CODE_WRITE_CONTACTS)
             } else {
-                addPhoneContacts()
+                addPhoneContact()
             }
         }
 
@@ -59,13 +65,81 @@ class MainActivity : AppCompatActivity() {
 
     // Private
 
-    private fun updatePermissionStatus() {
-        permission_text_view.text = "WRITE_CONTACTS=${hasPermission(Manifest.permission.WRITE_CONTACTS)}" +
-                "\nREAD_CONTACTS=${hasPermission(Manifest.permission.READ_CONTACTS)}"
+    private fun refreshPermissionStatus() {
+        val text = "WRITE_CONTACTS=${hasPermission(Manifest.permission.WRITE_CONTACTS)} \nREAD_CONTACTS=${hasPermission(Manifest.permission.READ_CONTACTS)}"
+        permission_text_view.text = text
     }
 
-    private fun addPhoneContacts() {
-        //AddPhoneContactActivity.start(applicationContext);
+    // This method will only insert an empty data to RawContacts.CONTENT_URI
+    // The purpose is to get a system generated raw contact id.
+    private fun getRawContactId(): Long {
+        // Insert an empty contact.
+        val contentValues = ContentValues()
+        val rawContactUri = contentResolver.insert(ContactsContract.RawContacts.CONTENT_URI, contentValues)
+        // Get the newly created contact raw id.
+        return ContentUris.parseId(rawContactUri)
+    }
+
+    private fun addPhoneContact() {
+        // Get android phone contact content provider uri.
+        val addContactsUri = ContactsContract.Data.CONTENT_URI
+
+        // Add an empty contact and get the generated id.
+        val rowContactId = getRawContactId()
+
+        // Add contact name data.
+        val displayName = "ZZZZZZ"
+        insertContactDisplayName(addContactsUri, rowContactId, displayName)
+
+        // Add contact phone data.
+        val phoneNumber = "0123456789"
+        val phoneTypeStr = "Mobile"
+        insertContactPhoneNumber(addContactsUri, rowContactId, phoneNumber, phoneTypeStr)
+
+        Toast.makeText(this, "Contact $displayName successfully added", Toast.LENGTH_LONG).show()
+    }
+
+    private fun insertContactDisplayName(addContactsUri: Uri, rawContactId: Long, displayName: String) {
+        val contentValues = ContentValues()
+
+        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
+
+        // Each contact must has an mime type to avoid java.lang.IllegalArgumentException: mimeType is required error.
+        contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
+
+        // Put contact display name value.
+        contentValues.put(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, displayName)
+
+        contentResolver.insert(addContactsUri, contentValues)
+
+    }
+
+    private fun insertContactPhoneNumber(addContactsUri: Uri, rawContactId: Long, phoneNumber: String, phoneTypeStr: String) {
+        // Create a ContentValues object.
+        val contentValues = ContentValues()
+
+        // Each contact must has an id to avoid java.lang.IllegalArgumentException: raw_contact_id is required error.
+        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
+
+        // Each contact must has an mime type to avoid java.lang.IllegalArgumentException: mimeType is required error.
+        contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+
+        // Put phone number value.
+        contentValues.put(ContactsContract.CommonDataKinds.Phone.NUMBER, phoneNumber)
+
+        // Calculate phone type by user selection.
+        val phoneContactType = when (phoneTypeStr) {
+            "home" -> ContactsContract.CommonDataKinds.Phone.TYPE_HOME
+            "mobile" -> ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE
+            "work" -> ContactsContract.CommonDataKinds.Phone.TYPE_WORK
+            else -> ContactsContract.CommonDataKinds.Phone.TYPE_HOME
+        }
+        // Put phone type value.
+        contentValues.put(ContactsContract.CommonDataKinds.Phone.TYPE, phoneContactType)
+
+        // Insert new contact data into phone contact list.
+        contentResolver.insert(addContactsUri, contentValues)
+
     }
 
     // Check whether user has phone contacts manipulation permission or not.
@@ -111,33 +185,32 @@ class MainActivity : AppCompatActivity() {
                     readPhoneContacts()
                 } else if (requestCode == PERMISSION_REQUEST_CODE_WRITE_CONTACTS) {
                     // If user grant write contacts permission then start add phone contact activity.
-                    addPhoneContacts()
+                    addPhoneContact()
                 }
             } else {
                 Toast.makeText(applicationContext, "You denied permission.", Toast.LENGTH_LONG).show()
             }
         }
 
-        updatePermissionStatus()
+        refreshPermissionStatus()
     }
 
     private fun getAllPhoneContacts(): List<String> {
         // Store all phone contacts list.
         // Each String format is " DisplayName \r\n Phone Number \r\n Phone Type " ( Jerry \r\n 111111 \r\n Home) .
-        var phoneContacts = ArrayList<String>()
+        val phoneContacts = ArrayList<String>()
 
         // Get query phone contacts cursor object.
-        val readContactsUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+        val readContactsUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
         val cursor = contentResolver.query(readContactsUri, null, null, null, null)
-
-        if (cursor != null) {
+        cursor?.let {
             cursor.moveToFirst()
 
             // Loop in the phone contacts cursor to add each contacts in phoneContactsList.
             do {
                 // Get contact display name.
                 val displayNameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
-                val userDisplayName = cursor.getString(displayNameIndex);
+                val userDisplayName = cursor.getString(displayNameIndex)
 
                 // Get contact phone number.
                 val phoneNumberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
@@ -148,13 +221,11 @@ class MainActivity : AppCompatActivity() {
                 val phoneTypeColumnIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE)
                 val phoneTypeInt = cursor.getInt(phoneTypeColumnIndex)
 
-                var phoneTypeStr = "Mobile"
-                if (phoneTypeInt == ContactsContract.CommonDataKinds.Phone.TYPE_HOME) {
-                    phoneTypeStr = "Home"
-                } else if (phoneTypeInt == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) {
-                    phoneTypeStr = "Mobile"
-                } else if (phoneTypeInt == ContactsContract.CommonDataKinds.Phone.TYPE_WORK) {
-                    phoneTypeStr = "Work"
+                val phoneTypeStr = when (phoneTypeInt) {
+                    ContactsContract.CommonDataKinds.Phone.TYPE_HOME -> "Home"
+                    ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE -> "Mobile"
+                    ContactsContract.CommonDataKinds.Phone.TYPE_WORK -> "Work"
+                    else -> "Mobile"
                 }
 
                 val contactStringBuf = StringBuffer()
@@ -167,6 +238,7 @@ class MainActivity : AppCompatActivity() {
                 phoneContacts.add(contactStringBuf.toString())
             } while (cursor.moveToNext())
         }
+        cursor.close()
 
         return phoneContacts
     }
