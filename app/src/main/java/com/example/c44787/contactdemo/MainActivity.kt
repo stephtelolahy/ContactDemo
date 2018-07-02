@@ -3,6 +3,7 @@ package com.example.c44787.contactdemo
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
@@ -20,10 +21,6 @@ class MainActivity : AppCompatActivity() {
     private val PERMISSION_REQUEST_CODE_WRITE_CONTACTS = 2
 
     // Properties
-
-    // Store all phone contacts list.
-    // Each String format is " DisplayName \r\n Phone Number \r\n Phone Type " ( Jerry \r\n 111111 \r\n Home) .
-    val phoneContacts = ArrayList<String>()
 
     // This is the phone contacts list view's data adapter.
     private lateinit var contactsListDataAdapter: ArrayAdapter<String>
@@ -124,60 +121,61 @@ class MainActivity : AppCompatActivity() {
         updatePermissionStatus()
     }
 
-    // Read and display android phone contacts in list view.
-    private fun readPhoneContacts() {
-/*
-        // First empty current phone contacts list data.
-        int size = phoneContactsList . size ();
-        for (int i = 0;i < size;i++)
-        {
-            phoneContactsList.remove(i);
-            i--;
-            size = phoneContactsList.size();
-        }
+    private fun getAllPhoneContacts(): List<String> {
+        // Store all phone contacts list.
+        // Each String format is " DisplayName \r\n Phone Number \r\n Phone Type " ( Jerry \r\n 111111 \r\n Home) .
+        var phoneContacts = ArrayList<String>()
 
         // Get query phone contacts cursor object.
-        Uri readContactsUri = ContactsContract . CommonDataKinds . Phone . CONTENT_URI;
-        Cursor cursor = getContentResolver ().query(readContactsUri, null, null, null, null);
+        val readContactsUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+        val cursor = contentResolver.query(readContactsUri, null, null, null, null)
 
         if (cursor != null) {
-            cursor.moveToFirst();
+            cursor.moveToFirst()
 
             // Loop in the phone contacts cursor to add each contacts in phoneContactsList.
             do {
                 // Get contact display name.
-                int displayNameIndex = cursor . getColumnIndex (ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
-                String userDisplayName = cursor . getString (displayNameIndex);
+                val displayNameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
+                val userDisplayName = cursor.getString(displayNameIndex);
 
                 // Get contact phone number.
-                int phoneNumberIndex = cursor . getColumnIndex (ContactsContract.CommonDataKinds.Phone.NUMBER);
-                String phoneNumber = cursor . getString (phoneNumberIndex);
+                val phoneNumberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                val phoneNumber = cursor.getString(phoneNumberIndex)
 
                 // Get contact phone type.
-                String phoneTypeStr = "Mobile";
-                int phoneTypeColumnIndex = cursor . getColumnIndex (ContactsContract.CommonDataKinds.Phone.TYPE);
-                int phoneTypeInt = cursor . getInt (phoneTypeColumnIndex);
+
+                val phoneTypeColumnIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE)
+                val phoneTypeInt = cursor.getInt(phoneTypeColumnIndex)
+
+                var phoneTypeStr = "Mobile"
                 if (phoneTypeInt == ContactsContract.CommonDataKinds.Phone.TYPE_HOME) {
-                    phoneTypeStr = "Home";
+                    phoneTypeStr = "Home"
                 } else if (phoneTypeInt == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) {
-                    phoneTypeStr = "Mobile";
+                    phoneTypeStr = "Mobile"
                 } else if (phoneTypeInt == ContactsContract.CommonDataKinds.Phone.TYPE_WORK) {
-                    phoneTypeStr = "Work";
+                    phoneTypeStr = "Work"
                 }
 
-                StringBuffer contactStringBuf = new StringBuffer();
-                contactStringBuf.append(userDisplayName);
-                contactStringBuf.append("\r\n");
-                contactStringBuf.append(phoneNumber);
-                contactStringBuf.append("\r\n");
-                contactStringBuf.append(phoneTypeStr);
+                val contactStringBuf = StringBuffer()
+                contactStringBuf.append(userDisplayName)
+                contactStringBuf.append("\r\n")
+                contactStringBuf.append(phoneNumber)
+                contactStringBuf.append("\r\n")
+                contactStringBuf.append(phoneTypeStr)
 
-                phoneContactsList.add(contactStringBuf.toString());
-            } while (cursor.moveToNext());
-
-            // Refresh the listview to display read out phone contacts.
-            contactsListDataAdapter.notifyDataSetChanged();
+                phoneContacts.add(contactStringBuf.toString())
+            } while (cursor.moveToNext())
         }
-        */
+
+        return phoneContacts
+    }
+
+    // Read and display android phone contacts in list view.
+    private fun readPhoneContacts() {
+        // Refresh the listView to display read out phone contacts.
+        contactsListDataAdapter.clear()
+        contactsListDataAdapter.addAll(getAllPhoneContacts())
+        contactsListDataAdapter.notifyDataSetChanged()
     }
 }
