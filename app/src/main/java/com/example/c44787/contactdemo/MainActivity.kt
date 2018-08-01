@@ -108,22 +108,24 @@ class MainActivity : AppCompatActivity() {
         val rowContactId = getRawContactId()
 
         // Add contact name data.
-        insertContactDisplayName(addContactsUri, rowContactId, "AAAAAAA ZZZZZZZ")
+        insertContactName(addContactsUri, rowContactId, "000FirstName", "000LastName")
         insertContactWorkPhoneNumber(addContactsUri, rowContactId, "0123456789")
         insertContactMobilePhoneNumber(addContactsUri, rowContactId, "0687954321")
         insertContactAddress(addContactsUri, rowContactId, "3 rue des Meaux", "75012", "Nanterre", "France")
         insertContactEmail(addContactsUri, rowContactId, "abc@def.com")
-        insertContactJob(addContactsUri, rowContactId, "BigCompany", "Manager", "B204")
-        insertContactNote(addContactsUri, rowContactId, "This is a note")
+        insertContactJob(addContactsUri, rowContactId, "CompanyName", "JobTitle", "Office B021")
+        insertContactNote(addContactsUri, rowContactId, "Note1: Data1")
+        insertContactNote(addContactsUri, rowContactId, "Note2: Data2")
 
         Toast.makeText(this, "Contact successfully added", Toast.LENGTH_LONG).show()
     }
 
-    private fun insertContactDisplayName(addContactsUri: Uri, rawContactId: Long, displayName: String) {
+    private fun insertContactName(addContactsUri: Uri, rawContactId: Long, firstName: String, lastName: String) {
         val contentValues = ContentValues()
         contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
         contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-        contentValues.put(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, displayName)
+        contentValues.put(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, firstName)
+        contentValues.put(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, lastName)
         contentResolver.insert(addContactsUri, contentValues)
     }
 
