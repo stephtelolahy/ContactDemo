@@ -87,6 +87,9 @@ class MainActivity : AppCompatActivity() {
         switch_write_permission.isChecked = hasPermission(Manifest.permission.WRITE_CONTACTS)
     }
 
+    // All Keys here
+    // https://developer.android.com/reference/android/provider/ContactsContract.CommonDataKinds
+
     // This method will only insert an empty data to RawContacts.CONTENT_URI
     // The purpose is to get a system generated raw contact id.
     private fun getRawContactId(): Long {
@@ -110,6 +113,7 @@ class MainActivity : AppCompatActivity() {
         insertContactMobilePhoneNumber(addContactsUri, rowContactId, "0687954321")
         insertContactAddress(addContactsUri, rowContactId, "3 rue des Meaux", "75012", "Nanterre", "France")
         insertContactEmail(addContactsUri, rowContactId, "abc@def.com")
+        insertContactJob(addContactsUri, rowContactId, "BigCompany", "Manager", "B204")
 
         Toast.makeText(this, "Contact successfully added", Toast.LENGTH_LONG).show()
     }
@@ -163,6 +167,16 @@ class MainActivity : AppCompatActivity() {
         contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
         contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)
         contentValues.put(ContactsContract.CommonDataKinds.Email.ADDRESS, email)
+        contentResolver.insert(addContactsUri, contentValues)
+    }
+
+    private fun insertContactJob(addContactsUri: Uri, rawContactId: Long, company: String, jobTitle: String, officeLocation: String) {
+        val contentValues = ContentValues()
+        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
+        contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE)
+        contentValues.put(ContactsContract.CommonDataKinds.Organization.COMPANY, company)
+        contentValues.put(ContactsContract.CommonDataKinds.Organization.TITLE, jobTitle)
+        contentValues.put(ContactsContract.CommonDataKinds.Organization.OFFICE_LOCATION, officeLocation)
         contentResolver.insert(addContactsUri, contentValues)
     }
 
