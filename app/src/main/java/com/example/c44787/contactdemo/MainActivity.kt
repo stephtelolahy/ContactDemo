@@ -105,15 +105,11 @@ class MainActivity : AppCompatActivity() {
         val rowContactId = getRawContactId()
 
         // Add contact name data.
-        val displayName = "ZZZZZZ"
-        insertContactDisplayName(addContactsUri, rowContactId, displayName)
+        insertContactDisplayName(addContactsUri, rowContactId, "AAAAAAA ZZZZZZZ")
+        insertContactPhoneNumber(addContactsUri, rowContactId, "0123456789", "Mobile")
+        insertContactAddress(addContactsUri, rowContactId, "3 rue des Meaux", "75012", "Nanterre", "France")
 
-        // Add contact phone data.
-        val phoneNumber = "0123456789"
-        val phoneTypeStr = "Mobile"
-        insertContactPhoneNumber(addContactsUri, rowContactId, phoneNumber, phoneTypeStr)
-
-        Toast.makeText(this, "Contact $displayName successfully added", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "Contact successfully added", Toast.LENGTH_LONG).show()
     }
 
     private fun insertContactDisplayName(addContactsUri: Uri, rawContactId: Long, displayName: String) {
@@ -158,6 +154,18 @@ class MainActivity : AppCompatActivity() {
         contentResolver.insert(addContactsUri, contentValues)
 
     }
+
+    private fun insertContactAddress(addContactsUri: Uri, rawContactId: Long, street: String, postCode: String, city: String, country: String) {
+        val contentValues = ContentValues()
+        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
+        contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE)
+        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.STREET, street)
+        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE, postCode)
+        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.CITY, city)
+        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY, country)
+        contentResolver.insert(addContactsUri, contentValues)
+    }
+
 
     // Check whether user has phone contacts manipulation permission or not.
     private fun hasPermission(permission: String): Boolean {
