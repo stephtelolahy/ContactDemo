@@ -3,4 +3,6 @@
     <string name="add_phone_contact">Add Phone Contact</string>
     <string name="read_phone_contact">Read Phone Contact</string>
     <string name="open_settings">Open Settings</string>
+    <string name="read_contacts">READ_CONTACTS</string>
+    <string name="write_contacts">WRITE_CONTACTS</string>
 </resources>

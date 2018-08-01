@@ -39,8 +39,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        refreshPermissionStatus()
-
         // Create the list view data adapter
         contactsListDataAdapter = ArrayAdapter(applicationContext, android.R.layout.simple_list_item_1)
         display_phone_contacts_list_view.adapter = contactsListDataAdapter
@@ -79,9 +77,14 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
+    override fun onResume() {
+        super.onResume()
+        refreshPermissionStatus()
+    }
+
     private fun refreshPermissionStatus() {
-        val text = "WRITE_CONTACTS=${hasPermission(Manifest.permission.WRITE_CONTACTS)} \nREAD_CONTACTS=${hasPermission(Manifest.permission.READ_CONTACTS)}"
-        permission_text_view.text = text
+        switch_read_permission.isChecked = hasPermission(Manifest.permission.READ_CONTACTS)
+        switch_write_permission.isChecked = hasPermission(Manifest.permission.WRITE_CONTACTS)
     }
 
     // This method will only insert an empty data to RawContacts.CONTENT_URI
