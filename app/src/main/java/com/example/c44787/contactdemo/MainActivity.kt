@@ -242,52 +242,52 @@ class MainActivity : AppCompatActivity() {
 
     // https://developer.android.com/training/contacts-provider/retrieve-names
     private fun getAllPhoneContacts(): List<String> {
-        // Store all phone contacts list.
-        // Each String format is " DisplayName \r\n Phone Number \r\n Phone Type " ( Jerry \r\n 111111 \r\n Home) .
-        val phoneContacts = ArrayList<String>()
+        val list = ArrayList<String>()
 
-        // Get query phone contacts cursor object.
-        val readContactsUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
-        val cursor = contentResolver.query(readContactsUri, null, null, null, null)
-        cursor?.let {
+        val cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI,
+                null,
+                null,
+                null,
+                null)
+        if (cursor != null && cursor.count > 0) {
             cursor.moveToFirst()
-
-            // Loop in the phone contacts cursor to add each contacts in phoneContactsList.
             do {
-                // Get contact display name.
-                val displayNameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
-                val userDisplayName = cursor.getString(displayNameIndex)
+                val id = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts._ID))
+                val displayName = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME))
+                val hasPhoneNumber = cursor.getInt(cursor.getColumnIndexOrThrow(ContactsContract.Contacts.HAS_PHONE_NUMBER))
+                var mobileNumber = ""
+                var workNumber = ""
 
-                // Get contact phone number.
-                val phoneNumberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
-                val phoneNumber = cursor.getString(phoneNumberIndex)
+                if (hasPhoneNumber > 0) {
+                    val phoneCursor = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                            null,
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                            arrayOf(id),
+                            null)
+                    phoneCursor.moveToFirst()
+                    do {
+                        val phoneNumber = phoneCursor.getString(phoneCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                        val phoneType = phoneCursor.getInt(phoneCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.TYPE))
+                        when (phoneType) {
+                            ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE -> mobileNumber = phoneNumber
+                            ContactsContract.CommonDataKinds.Phone.TYPE_WORK -> workNumber = phoneNumber
+                        }
 
-                // Get contact phone type.
-
-                val phoneTypeColumnIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE)
-                val phoneTypeInt = cursor.getInt(phoneTypeColumnIndex)
-
-                val phoneTypeStr = when (phoneTypeInt) {
-                    ContactsContract.CommonDataKinds.Phone.TYPE_HOME -> "Home"
-                    ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE -> "Mobile"
-                    ContactsContract.CommonDataKinds.Phone.TYPE_WORK -> "Work"
-                    else -> "Mobile"
+                    } while (phoneCursor.moveToNext())
                 }
 
-                val contactStringBuf = StringBuffer()
-                contactStringBuf.append(userDisplayName)
-                contactStringBuf.append("\r\n")
-                contactStringBuf.append(phoneNumber)
-                contactStringBuf.append("\r\n")
-                contactStringBuf.append(phoneTypeStr)
-
-                phoneContacts.add(contactStringBuf.toString())
+                val contact = "id:$id" +
+                        "\ndisplayName:$displayName" +
+                        "\nhasPhoneNumber:$hasPhoneNumber" +
+                        "\nmobileNumber:$mobileNumber" +
+                        "\nworkNumber:$workNumber"
+                list.add(contact)
             } while (cursor.moveToNext())
         }
-        cursor.close()
-
-        return phoneContacts
+        cursor?.close()
+        return list
     }
+
 
     // Read and display android phone contacts in list view.
     private fun readPhoneContacts() {
