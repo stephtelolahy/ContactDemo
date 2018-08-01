@@ -258,6 +258,12 @@ class MainActivity : AppCompatActivity() {
                 var mobileNumber = ""
                 var workNumber = ""
 
+                val nameCursor = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                        null,
+                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                        arrayOf(id),
+                        null)
+
                 if (hasPhoneNumber > 0) {
                     val phoneCursor = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                             null,
@@ -274,13 +280,25 @@ class MainActivity : AppCompatActivity() {
                         }
 
                     } while (phoneCursor.moveToNext())
+                    phoneCursor.close()
                 }
+
+                val emailCursor = contentResolver.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                        null,
+                        ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
+                        arrayOf(id),
+                        null)
+                emailCursor.moveToFirst()
+                val email = emailCursor.getString(emailCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.ADDRESS))
+                emailCursor.close()
+
 
                 val contact = "id:$id" +
                         "\ndisplayName:$displayName" +
                         "\nhasPhoneNumber:$hasPhoneNumber" +
                         "\nmobileNumber:$mobileNumber" +
-                        "\nworkNumber:$workNumber"
+                        "\nworkNumber:$workNumber" +
+                        "\nemail:$email"
                 list.add(contact)
             } while (cursor.moveToNext())
         }
