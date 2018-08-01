@@ -109,6 +109,7 @@ class MainActivity : AppCompatActivity() {
         insertContactWorkPhoneNumber(addContactsUri, rowContactId, "0123456789")
         insertContactMobilePhoneNumber(addContactsUri, rowContactId, "0687954321")
         insertContactAddress(addContactsUri, rowContactId, "3 rue des Meaux", "75012", "Nanterre", "France")
+        insertContactEmail(addContactsUri, rowContactId, "abc@def.com")
 
         Toast.makeText(this, "Contact successfully added", Toast.LENGTH_LONG).show()
     }
@@ -154,6 +155,14 @@ class MainActivity : AppCompatActivity() {
         contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE, postCode)
         contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.CITY, city)
         contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY, country)
+        contentResolver.insert(addContactsUri, contentValues)
+    }
+
+    private fun insertContactEmail(addContactsUri: Uri, rawContactId: Long, email: String) {
+        val contentValues = ContentValues()
+        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
+        contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)
+        contentValues.put(ContactsContract.CommonDataKinds.Email.ADDRESS, email)
         contentResolver.insert(addContactsUri, contentValues)
     }
 
