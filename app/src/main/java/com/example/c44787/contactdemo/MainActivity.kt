@@ -114,23 +114,17 @@ class MainActivity : AppCompatActivity() {
         insertContactAddress(addContactsUri, rowContactId, "3 rue des Meaux", "75012", "Nanterre", "France")
         insertContactEmail(addContactsUri, rowContactId, "abc@def.com")
         insertContactJob(addContactsUri, rowContactId, "BigCompany", "Manager", "B204")
+        insertContactNote(addContactsUri, rowContactId, "This is a note")
 
         Toast.makeText(this, "Contact successfully added", Toast.LENGTH_LONG).show()
     }
 
     private fun insertContactDisplayName(addContactsUri: Uri, rawContactId: Long, displayName: String) {
         val contentValues = ContentValues()
-
         contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
-
-        // Each contact must has an mime type to avoid java.lang.IllegalArgumentException: mimeType is required error.
         contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-
-        // Put contact display name value.
         contentValues.put(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, displayName)
-
         contentResolver.insert(addContactsUri, contentValues)
-
     }
 
     private fun insertContactWorkPhoneNumber(addContactsUri: Uri, rawContactId: Long, workNumber: String) {
@@ -159,6 +153,7 @@ class MainActivity : AppCompatActivity() {
         contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE, postCode)
         contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.CITY, city)
         contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY, country)
+        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.TYPE, ContactsContract.CommonDataKinds.StructuredPostal.TYPE_WORK)
         contentResolver.insert(addContactsUri, contentValues)
     }
 
@@ -167,6 +162,7 @@ class MainActivity : AppCompatActivity() {
         contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
         contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)
         contentValues.put(ContactsContract.CommonDataKinds.Email.ADDRESS, email)
+        contentValues.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_WORK)
         contentResolver.insert(addContactsUri, contentValues)
     }
 
@@ -177,6 +173,14 @@ class MainActivity : AppCompatActivity() {
         contentValues.put(ContactsContract.CommonDataKinds.Organization.COMPANY, company)
         contentValues.put(ContactsContract.CommonDataKinds.Organization.TITLE, jobTitle)
         contentValues.put(ContactsContract.CommonDataKinds.Organization.OFFICE_LOCATION, officeLocation)
+        contentResolver.insert(addContactsUri, contentValues)
+    }
+
+    private fun insertContactNote(addContactsUri: Uri, rawContactId: Long, notes: String) {
+        val contentValues = ContentValues()
+        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
+        contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE)
+        contentValues.put(ContactsContract.CommonDataKinds.Note.NOTE, notes)
         contentResolver.insert(addContactsUri, contentValues)
     }
 
@@ -234,6 +238,7 @@ class MainActivity : AppCompatActivity() {
         refreshPermissionStatus()
     }
 
+    // https://developer.android.com/training/contacts-provider/retrieve-names
     private fun getAllPhoneContacts(): List<String> {
         // Store all phone contacts list.
         // Each String format is " DisplayName \r\n Phone Number \r\n Phone Type " ( Jerry \r\n 111111 \r\n Home) .
