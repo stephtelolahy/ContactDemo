@@ -106,7 +106,8 @@ class MainActivity : AppCompatActivity() {
 
         // Add contact name data.
         insertContactDisplayName(addContactsUri, rowContactId, "AAAAAAA ZZZZZZZ")
-        insertContactPhoneNumber(addContactsUri, rowContactId, "0123456789", "Mobile")
+        insertContactWorkPhoneNumber(addContactsUri, rowContactId, "0123456789")
+        insertContactMobilePhoneNumber(addContactsUri, rowContactId, "0687954321")
         insertContactAddress(addContactsUri, rowContactId, "3 rue des Meaux", "75012", "Nanterre", "France")
 
         Toast.makeText(this, "Contact successfully added", Toast.LENGTH_LONG).show()
@@ -127,32 +128,22 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun insertContactPhoneNumber(addContactsUri: Uri, rawContactId: Long, phoneNumber: String, phoneTypeStr: String) {
-        // Create a ContentValues object.
+    private fun insertContactWorkPhoneNumber(addContactsUri: Uri, rawContactId: Long, workNumber: String) {
         val contentValues = ContentValues()
-
-        // Each contact must has an id to avoid java.lang.IllegalArgumentException: raw_contact_id is required error.
         contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
-
-        // Each contact must has an mime type to avoid java.lang.IllegalArgumentException: mimeType is required error.
         contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-
-        // Put phone number value.
-        contentValues.put(ContactsContract.CommonDataKinds.Phone.NUMBER, phoneNumber)
-
-        // Calculate phone type by user selection.
-        val phoneContactType = when (phoneTypeStr) {
-            "home" -> ContactsContract.CommonDataKinds.Phone.TYPE_HOME
-            "mobile" -> ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE
-            "work" -> ContactsContract.CommonDataKinds.Phone.TYPE_WORK
-            else -> ContactsContract.CommonDataKinds.Phone.TYPE_HOME
-        }
-        // Put phone type value.
-        contentValues.put(ContactsContract.CommonDataKinds.Phone.TYPE, phoneContactType)
-
-        // Insert new contact data into phone contact list.
+        contentValues.put(ContactsContract.CommonDataKinds.Phone.NUMBER, workNumber)
+        contentValues.put(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_WORK)
         contentResolver.insert(addContactsUri, contentValues)
+    }
 
+    private fun insertContactMobilePhoneNumber(addContactsUri: Uri, rawContactId: Long, mobileNumber: String) {
+        val contentValues = ContentValues()
+        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawContactId)
+        contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+        contentValues.put(ContactsContract.CommonDataKinds.Phone.NUMBER, mobileNumber)
+        contentValues.put(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE)
+        contentResolver.insert(addContactsUri, contentValues)
     }
 
     private fun insertContactAddress(addContactsUri: Uri, rawContactId: Long, street: String, postCode: String, city: String, country: String) {
