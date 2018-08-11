@@ -1,24 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/share"
-        android:title="Share"
-        app:showAsAction="ifRoom" />
+        android:title="Share" />
     <item
         android:id="@+id/call"
-        android:title="Call"
-        app:showAsAction="ifRoom" />
+        android:title="Call" />
     <item
         android:id="@+id/message"
-        android:title="Message"
-        app:showAsAction="ifRoom" />
+        android:title="Message" />
     <item
         android:id="@+id/email"
-        android:title="Email"
-        app:showAsAction="ifRoom" />
+        android:title="Email" />
     <item
         android:id="@+id/direction"
-        android:title="Direction"
-        app:showAsAction="ifRoom" />
+        android:title="Direction" />
 </menu>

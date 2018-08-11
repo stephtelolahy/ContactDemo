@@ -7,16 +7,20 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.ContactsContract
 import android.provider.Settings
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
+import java.io.File
+import java.io.FileWriter
 
 
 //https://www.dev2qa.com/android-add-contact-programmatically-example/
@@ -75,16 +79,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.share -> shareContact()
+            R.id.share -> shareContactVCardFile()
             R.id.call -> callContact()
             R.id.message -> sendMessageToContact()
             R.id.email -> sendEmailToContact()
-            R.id.direction -> navigateToContact()
+            R.id.direction -> showContactAddress()
             else -> super.onOptionsItemSelected(item)
         }
     }
 
-    private fun navigateToContact(): Boolean {
+    // Actions
+
+    private fun showContactAddress(): Boolean {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
@@ -100,8 +106,65 @@ class MainActivity : AppCompatActivity() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    private fun shareContact(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    /* Checks if external storage is available for read and write */
+    private fun isExternalStorageWritable(): Boolean {
+        return Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
+    }
+
+    private fun shareContactVCardFile(): Boolean {
+
+        if (!isExternalStorageWritable()) {
+            Toast.makeText(this, "External storage not writable", Toast.LENGTH_SHORT).show()
+            return true
+        }
+
+        // TODO: use vCard library
+        // https://stackoverflow.com/questions/13702357/how-to-generate-a-vcf-file-from-an-object-which-contains-contact-detail-and-obj
+
+        val firstName = "000FirstName"
+        val lastName = "000Surname"
+        val companyName = "000Company"
+        val jobTitle = "Title"
+        val workPhone = "0123456789"
+        val homePhone = "065432178"
+        val street = "18 rue des Bois"
+        val city = "Bonn"
+        val state = "State"
+        val postCode = "54089"
+        val country = "Italia"
+        val email = "user@company.com"
+
+        try {
+
+            val vcfFile = File(getExternalFilesDir(null), "generated.vcf")
+
+            val fw = FileWriter(vcfFile)
+            fw.write("BEGIN:VCARD\r\n")
+            fw.write("VERSION:3.0\r\n")
+            fw.write("N:$lastName;$firstName\r\n")
+            fw.write("FN:$firstName $lastName\r\n")
+            fw.write("ORG:$companyName\r\n")
+            fw.write("TITLE:$jobTitle\r\n")
+            fw.write("TEL;TYPE=WORK,VOICE:$workPhone\r\n")
+            fw.write("TEL;TYPE=HOME,VOICE:$homePhone\r\n")
+            fw.write("ADR;TYPE=WORK:;;$street;$city;$state;$postCode;$country\r\n")
+            fw.write("EMAIL;TYPE=PREF,INTERNET:$email\r\n")
+            fw.write("END:VCARD\r\n")
+            fw.close()
+
+            val intent = Intent()
+            intent.action = android.content.Intent.ACTION_SEND
+            // https://stackoverflow.com/questions/38200282/android-os-fileuriexposedexception-file-storage-emulated-0-test-txt-exposed
+            val uri = FileProvider.getUriForFile(this, "com.example.c44787.contactdemo.fileprovider", vcfFile)
+            intent.type = "text/x-vcard"
+            intent.putExtra(Intent.EXTRA_STREAM, uri)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            startActivity(Intent.createChooser(intent, "Share using"))
+
+        } catch (e: Exception) {
+            Toast.makeText(this, e.localizedMessage, Toast.LENGTH_SHORT).show()
+        }
+        return true
     }
 
 
@@ -224,7 +287,6 @@ class MainActivity : AppCompatActivity() {
         contentResolver.insert(addContactsUri, contentValues)
     }
 
-
     // Check whether user has phone contacts manipulation permission or not.
     private fun hasPermission(permission: String): Boolean {
         // Here, thisActivity is the current activity
@@ -256,7 +318,6 @@ class MainActivity : AppCompatActivity() {
 
     // After user select Allow or Deny button in request runtime permission dialog
     // , this method will be invoked.
-
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (grantResults.isNotEmpty()) {
@@ -294,7 +355,6 @@ class MainActivity : AppCompatActivity() {
         cursor.close()
         return list
     }
-
 
     // Read and display android phone contacts in list view.
     private fun readPhoneContacts() {
