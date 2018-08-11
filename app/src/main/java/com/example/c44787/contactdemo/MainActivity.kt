@@ -12,6 +12,8 @@ import android.provider.Settings
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
@@ -64,6 +66,42 @@ class MainActivity : AppCompatActivity() {
         settings_phone_contacts_button.setOnClickListener {
             openContactSettings()
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.share -> shareContact()
+            R.id.call -> callContact()
+            R.id.message -> sendMessageToContact()
+            R.id.email -> sendEmailToContact()
+            R.id.direction -> navigateToContact()
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun navigateToContact(): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    private fun sendEmailToContact(): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    private fun sendMessageToContact(): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    private fun callContact(): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    private fun shareContact(): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
 
@@ -243,66 +281,17 @@ class MainActivity : AppCompatActivity() {
     // https://developer.android.com/training/contacts-provider/retrieve-names
     private fun getAllPhoneContacts(): List<String> {
         val list = ArrayList<String>()
-
-        val cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI,
-                null,
-                null,
-                null,
+        val cursor = contentResolver.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                arrayOf(ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.CommonDataKinds.Email.ADDRESS),
+                ContactsContract.Data.MIMETYPE + " = ?",
+                arrayOf(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE),
                 null)
-        if (cursor != null && cursor.count > 0) {
-            cursor.moveToFirst()
-            do {
-                val id = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts._ID))
-                val displayName = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME))
-                val hasPhoneNumber = cursor.getInt(cursor.getColumnIndexOrThrow(ContactsContract.Contacts.HAS_PHONE_NUMBER))
-                var mobileNumber = ""
-                var workNumber = ""
-
-                val nameCursor = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                        null,
-                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                        arrayOf(id),
-                        null)
-
-                if (hasPhoneNumber > 0) {
-                    val phoneCursor = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                            null,
-                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                            arrayOf(id),
-                            null)
-                    phoneCursor.moveToFirst()
-                    do {
-                        val phoneNumber = phoneCursor.getString(phoneCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER))
-                        val phoneType = phoneCursor.getInt(phoneCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.TYPE))
-                        when (phoneType) {
-                            ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE -> mobileNumber = phoneNumber
-                            ContactsContract.CommonDataKinds.Phone.TYPE_WORK -> workNumber = phoneNumber
-                        }
-
-                    } while (phoneCursor.moveToNext())
-                    phoneCursor.close()
-                }
-
-                val emailCursor = contentResolver.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-                        null,
-                        ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
-                        arrayOf(id),
-                        null)
-                emailCursor.moveToFirst()
-                val email = emailCursor.getString(emailCursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Email.ADDRESS))
-                emailCursor.close()
-
-
-                val contact = "id:$id" +
-                        "\ndisplayName:$displayName" +
-                        "\nhasPhoneNumber:$hasPhoneNumber" +
-                        "\nmobileNumber:$mobileNumber" +
-                        "\nworkNumber:$workNumber" +
-                        "\nemail:$email"
-                list.add(contact)
-            } while (cursor.moveToNext())
+        while (cursor.moveToNext()) {
+            val name = cursor.getString(0)
+            val email = cursor.getString(1)
+            list.add("$name\n$email")
         }
-        cursor?.close()
+        cursor.close()
         return list
     }
 
