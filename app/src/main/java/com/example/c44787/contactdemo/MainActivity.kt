@@ -97,7 +97,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendEmailToContact(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val intent = Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", "abc@gmail.com", null))
+        startActivity(Intent.createChooser(intent, "Send Email"))
+        return true
     }
 
     private fun sendSMSToContact(): Boolean {
