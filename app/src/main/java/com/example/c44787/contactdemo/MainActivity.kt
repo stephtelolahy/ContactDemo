@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         const val PERMISSION_REQUEST_CODE_READ_CONTACTS = 1
         const val PERMISSION_REQUEST_CODE_WRITE_CONTACTS = 2
+        const val PERMISSION_REQUEST_CODE_MAKE_CALL = 3
     }
 
     // Properties
@@ -102,8 +103,20 @@ class MainActivity : AppCompatActivity() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    private fun checkPermission(permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+    }
+
     private fun callContact(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        if (checkPermission(Manifest.permission.CALL_PHONE)) {
+            val intent = Intent(Intent.ACTION_CALL)
+            intent.data = Uri.parse("tel:0781824530")
+            startActivity(intent)
+        } else {
+            Toast.makeText(this@MainActivity, "Permission Call Phone denied", Toast.LENGTH_SHORT).show()
+            requestPermission(Manifest.permission.CALL_PHONE, PERMISSION_REQUEST_CODE_MAKE_CALL)
+        }
+        return true
     }
 
     /* Checks if external storage is available for read and write */
