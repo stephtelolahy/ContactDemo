@@ -93,11 +93,15 @@ class MainActivity : AppCompatActivity() {
     // Actions
 
     private fun showContactAddress(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val address = "3-5, Place Victor Hugo, 60180 Nogent-sur-Oise"
+        val intent = Intent(android.content.Intent.ACTION_VIEW, Uri.parse("google.navigation:q=$address"))
+        startActivity(intent)
+        return true
     }
 
     private fun sendEmailToContact(): Boolean {
-        val intent = Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", "abc@gmail.com", null))
+        val email = "abc@gmail.com"
+        val intent = Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", email, null))
         startActivity(Intent.createChooser(intent, "Send Email"))
         return true
     }
@@ -108,25 +112,23 @@ class MainActivity : AppCompatActivity() {
             return true
         }
 
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("sms:0781824530"))
+        val phoneNumber = "0781824530"
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("sms:$phoneNumber"))
         intent.putExtra("sms_body", "")
         startActivity(intent)
         return true
     }
 
-    private fun checkPermission(permission: String): Boolean {
-        return ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
-    }
-
     private fun callContact(): Boolean {
-        if (checkPermission(Manifest.permission.CALL_PHONE)) {
-            val intent = Intent(Intent.ACTION_CALL)
-            intent.data = Uri.parse("tel:0781824530")
-            startActivity(intent)
-        } else {
-            Toast.makeText(this@MainActivity, "Permission Call Phone denied", Toast.LENGTH_SHORT).show()
+        if (!hasPermission(Manifest.permission.CALL_PHONE)) {
             requestPermission(arrayOf(Manifest.permission.CALL_PHONE), PERMISSION_REQUEST_CODE_MAKE_CALL)
+            return true
         }
+
+        val phoneNumber = "0781824530"
+        val intent = Intent(Intent.ACTION_CALL)
+        intent.data = Uri.parse("tel:$phoneNumber")
+        startActivity(intent)
         return true
     }
 
