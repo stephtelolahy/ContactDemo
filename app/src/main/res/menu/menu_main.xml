@@ -8,7 +8,7 @@
         android:title="Call" />
     <item
         android:id="@+id/message"
-        android:title="Message" />
+        android:title="SMS" />
     <item
         android:id="@+id/email"
         android:title="Email" />

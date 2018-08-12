@@ -33,6 +33,7 @@ class MainActivity : AppCompatActivity() {
         const val PERMISSION_REQUEST_CODE_READ_CONTACTS = 1
         const val PERMISSION_REQUEST_CODE_WRITE_CONTACTS = 2
         const val PERMISSION_REQUEST_CODE_MAKE_CALL = 3
+        const val PERMISSION_REQUEST_CODE_SEND_SMS = 4
     }
 
     // Properties
@@ -53,7 +54,7 @@ class MainActivity : AppCompatActivity() {
         // Click this button start add phone contact activity.
         add_phone_contacts_button.setOnClickListener {
             if (!hasPermission(Manifest.permission.WRITE_CONTACTS)) {
-                requestPermission(Manifest.permission.WRITE_CONTACTS, PERMISSION_REQUEST_CODE_WRITE_CONTACTS)
+                requestPermission(arrayOf(Manifest.permission.WRITE_CONTACTS), PERMISSION_REQUEST_CODE_WRITE_CONTACTS)
             } else {
                 addPhoneContact()
             }
@@ -62,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         // Click this button to get and display phone contacts in the list view.
         read_phone_contacts_button.setOnClickListener {
             if (!hasPermission(Manifest.permission.READ_CONTACTS)) {
-                requestPermission(Manifest.permission.READ_CONTACTS, PERMISSION_REQUEST_CODE_READ_CONTACTS)
+                requestPermission(arrayOf(Manifest.permission.READ_CONTACTS), PERMISSION_REQUEST_CODE_READ_CONTACTS)
             } else {
                 readPhoneContacts()
             }
@@ -82,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.share -> shareContactVCardFile()
             R.id.call -> callContact()
-            R.id.message -> sendMessageToContact()
+            R.id.message -> sendSMSToContact()
             R.id.email -> sendEmailToContact()
             R.id.direction -> showContactAddress()
             else -> super.onOptionsItemSelected(item)
@@ -99,8 +100,16 @@ class MainActivity : AppCompatActivity() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    private fun sendMessageToContact(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    private fun sendSMSToContact(): Boolean {
+        if (!hasPermission(Manifest.permission.SEND_SMS)) {
+            requestPermission(arrayOf(Manifest.permission.SEND_SMS), PERMISSION_REQUEST_CODE_SEND_SMS)
+            return true
+        }
+
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("sms:0781824530"))
+        intent.putExtra("sms_body", "")
+        startActivity(intent)
+        return true
     }
 
     private fun checkPermission(permission: String): Boolean {
@@ -114,7 +123,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         } else {
             Toast.makeText(this@MainActivity, "Permission Call Phone denied", Toast.LENGTH_SHORT).show()
-            requestPermission(Manifest.permission.CALL_PHONE, PERMISSION_REQUEST_CODE_MAKE_CALL)
+            requestPermission(arrayOf(Manifest.permission.CALL_PHONE), PERMISSION_REQUEST_CODE_MAKE_CALL)
         }
         return true
     }
@@ -324,9 +333,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Request a runtime permission to app user.
-    private fun requestPermission(permission: String, requestCode: Int) {
-        val requestPermissionArray = arrayOf(permission)
-        ActivityCompat.requestPermissions(this, requestPermissionArray, requestCode)
+    private fun requestPermission(permissions: Array<String>, requestCode: Int) {
+        ActivityCompat.requestPermissions(this, permissions, requestCode)
     }
 
     // After user select Allow or Deny button in request runtime permission dialog
